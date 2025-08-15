@@ -73,20 +73,22 @@ export default function Page() {
 
   const simulateJokeTool = async (topic: string): Promise<ChatMessage> => {
     const jokeResult = await getRandomJoke(topic);
-    
+
     return {
       id: Date.now().toString() + '_tool',
       role: 'assistant',
       content: `Here's a ${jokeResult.topic} joke for you:\n\n"${jokeResult.joke}"`,
       timestamp: new Date(),
       reasoning: `I detected you wanted a ${topic} joke, so I used my joke tool to find one for you.`,
-      tools: [{
-        type: 'joke-generator',
-        name: 'get-random-joke',
-        state: 'output-available' as const,
-        input: { topic: topic },
-        output: jokeResult as unknown as JsonValue
-      }]
+      tools: [
+        {
+          type: 'joke-generator',
+          name: 'get-random-joke',
+          state: 'output-available' as const,
+          input: { topic: topic },
+          output: jokeResult as unknown as JsonValue,
+        },
+      ],
     };
   };
 
@@ -101,10 +103,10 @@ export default function Page() {
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, userMessage]);
-    
+
     // Check if this is a joke request
     const jokeType = detectJokeRequest(input);
-    
+
     setInput('');
     setIsLoading(true);
     setIsStreamingComplete(false);

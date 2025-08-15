@@ -6,18 +6,11 @@ export type ImageProps = Experimental_GeneratedImage & {
   alt?: string;
 };
 
-export const Image = ({
-  base64,
-  mediaType,
-  ...props
-}: ImageProps) => (
+export const Image = ({ base64, mediaType, ...props }: ImageProps) => (
   <img
     {...props}
     src={`data:${mediaType};base64,${base64}`}
     alt={props.alt}
-    className={cn(
-      'max-w-full h-auto rounded-md overflow-hidden',
-      props.className,
-    )}
+    className={cn('max-w-full h-auto rounded-md overflow-hidden', props.className)}
   />
 );
