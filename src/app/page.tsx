@@ -20,6 +20,10 @@ import { CodeBlock } from '@/components/ai-elements/code-block';
 import { CopyIcon, ThumbsUpIcon, ThumbsDownIcon, RefreshCwIcon, SparklesIcon, MessageCircleIcon, MicIcon, PlusIcon } from 'lucide-react';
 import { Loader } from '@/components/ai-elements/loader';
 import { getRandomJoke } from '@/lib/joke-tool';
+import type { ToolUIPart } from 'ai';
+
+// Type for JSON-serializable data
+type JsonValue = string | number | boolean | null | { [key: string]: JsonValue } | JsonValue[];
 
 interface ChatMessage {
   id: string;
@@ -31,8 +35,8 @@ interface ChatMessage {
     type: string;
     state: 'input-streaming' | 'input-available' | 'output-available' | 'output-error';
     name: string;
-    input?: any;
-    output?: any;
+    input?: JsonValue;
+    output?: JsonValue;
   }>;
 }
 
@@ -81,7 +85,7 @@ export default function Page() {
         name: 'get-random-joke',
         state: 'output-available' as const,
         input: { topic: topic },
-        output: jokeResult
+        output: jokeResult as unknown as JsonValue
       }]
     };
   };
@@ -140,7 +144,7 @@ export default function Page() {
 
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
-      let assistantMessage: ChatMessage = {
+      const assistantMessage: ChatMessage = {
         id: Date.now().toString(),
         role: 'assistant',
         content: '',
@@ -191,7 +195,9 @@ export default function Page() {
                   assistantMessage.content += parsed.content;
                   setMessages((prev) => prev.map((msg) => (msg.id === assistantMessage.id ? { ...msg, content: assistantMessage.content } : msg)));
                 }
-              } catch (e) {}
+              } catch {
+                // Ignore parsing errors for incomplete chunks
+              }
             }
           }
         }
@@ -235,7 +241,7 @@ export default function Page() {
     // Remove the assistant message and regenerate response
     const messageIndex = messages.findIndex((msg) => msg.id === messageId);
     if (messageIndex > 0 && !isLoading && isStreamingComplete) {
-      const previousUserMessage = messages[messageIndex - 1];
+      // const previousUserMessage = messages[messageIndex - 1]; // Not currently used
 
       // Remove the assistant message we want to regenerate
       const updatedMessages = messages.slice(0, messageIndex);
@@ -265,7 +271,7 @@ export default function Page() {
 
         const reader = response.body?.getReader();
         const decoder = new TextDecoder();
-        let assistantMessage: ChatMessage = {
+        const assistantMessage: ChatMessage = {
           id: Date.now().toString(),
           role: 'assistant',
           content: '',
@@ -318,7 +324,9 @@ export default function Page() {
                     assistantMessage.content += parsed.content;
                     setMessages((prev) => prev.map((msg) => (msg.id === assistantMessage.id ? { ...msg, content: assistantMessage.content } : msg)));
                   }
-                } catch (e) {}
+                } catch {
+                  // Ignore parsing errors for incomplete chunks
+                }
               }
             }
           }
@@ -351,7 +359,7 @@ export default function Page() {
                 <SparklesIcon className='h-5 w-5 text-white' />
                 AI Chatbot
               </h1>
-              <p className='text-sm text-muted-foreground'>Ask me anything and I'll help you out!</p>
+              <p className='text-sm text-muted-foreground'>Ask me anything and I&apos;ll help you out!</p>
             </div>
           </div>
         </div>
@@ -405,7 +413,7 @@ export default function Page() {
                         {/* Tool Usage */}
                         {message.tools?.map((tool, index) => (
                           <Tool key={index}>
-                            <ToolHeader type={`tool-${tool.name}` as any} state={tool.state} />
+                            <ToolHeader type={`tool-${tool.name}` as ToolUIPart['type']} state={tool.state} />
                             <ToolContent>
                               {tool.input && (
                                 <div className='p-4'>
