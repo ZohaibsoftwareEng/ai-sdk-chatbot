@@ -58,7 +58,14 @@ export const MessageAvatar = ({
     className={cn('size-8 ring ring-1 ring-border', className)}
     {...props}
   >
-    <AvatarImage alt="" className="mt-0 mb-0" src={src} />
+    <AvatarImage 
+      alt="" 
+      className="mt-0 mb-0" 
+      src={src} 
+      onError={(e) => {
+        e.currentTarget.src = '/ai-avatar.svg';
+      }}
+    />
     <AvatarFallback>{name?.slice(0, 2) || 'ME'}</AvatarFallback>
   </Avatar>
 );
